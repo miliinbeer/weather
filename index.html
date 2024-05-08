@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="shortcut icon" href="./icon.svg" />
+    <link rel="apple-touch-icon" href="./icon.svg" />
+    <link rel="stylesheet" href="./styles/styles.css" />
+    <title>Weather</title>
+  </head>
+  <body>
+    <header>
+      <p class="title">Weather</p>
+    </header>
+    <main>
+      <div class="lds-ring">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+      <!-- Геолокация, определяющаяся автоматически -->
+      <section class="geolocation">
+        <!-- <img class="geolocation__img" src="" alt="Icon" /> -->
+        <p class="geolocation__temperature"></p>
+        <div class="geolocation__items">
+          <p class="geolocation__city"></p>
+          <p class="geolocation__description"></p>
+        </div>
+        <div class="geolocation__button" id="change"></div>
+      </section>
+      <!-- Раздел с выбором другого города -->
+      <section class="selection">
+        <form class="selection__form" autocomplete="off" id="form">
+          <input
+            class="selection__input"
+            type="text"
+            id="input"
+            placeholder="Введите город"
+          />
+          <button type="button" class="selection__button" id="find">
+            Найти
+          </button>
+        </form>
+      </section>
+      <!-- Раздел об ошибке -->
+      <section class="error">
+        <div>
+          <p class="error__title">Упс. Что-то пошло не так.</p>
+          <p class="error__text">Информация об ошибке</p>
+        </div>
+        <button type="button" class="error__button" id="again">
+          Попробовать снова
+        </button>
+      </section>
+    </main>
+    <footer>
+      <p class="text">With ♥ by Milena</p>
+    </footer>
+
+    <script type="module" src="./app/script.js"></script>
+  </body>
+</html>
