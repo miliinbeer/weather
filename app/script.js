@@ -1,12 +1,30 @@
 import { OPENWEATHER, OPENWEATHER_URL_ONE, GEOIPIFY_URL } from "./keys.js";
-import * as element from "./elements.js";
+// Раздел, отображающий:
+export const geolocation = document.querySelector(".geolocation"); // Геолокацию, определяющий автоматически
+export const temperature = document.querySelector(".geolocation__temperature"); // Температуру
+export const city = document.querySelector(".geolocation__city"); // Название города
+export const description = document.querySelector(".geolocation__description");
+export const img = document.querySelector(".geolocation__img"); // Иконку погоды
+export const change = document.querySelector("#change"); // Кнопка для смены города
+// Раздел, отображающий:
+export const selection = document.querySelector(".selection");
+export const input = document.querySelector("#input"); // Ввод интересующего города
+export const find = document.querySelector("#find"); // Кнопка для поиска введенного города
+export const form = document.querySelector("#form"); // Форма ввода интересующего города
+// Раздел, отображающий:
+export const error = document.querySelector(".error"); // Сообщение об ошибке
+export const again = document.querySelector("#again"); // Кнопка для возврашения к разделу ввода интересующего города
+export const loader = document.querySelector(".lds-ring"); // Колесо загрузки
 
 // Запрос на определение местоположения
 function locationRequest() {
   return new Promise(function (resolve, reject) {
-    if (!navigator.geolocation) {
-    } else {
-      navigator.geolocation.getCurrentPosition(resolve, reject);
+    const geolocation = navigator.geolocation.getCurrentPosition(
+      resolve,
+      reject
+    );
+    if (geolocation) {
+      return;
     }
   });
 }
@@ -52,17 +70,17 @@ function renderWeather(data) {
   let weather = data.weather[0].description.split("");
   weather[0] = weather[0].toUpperCase();
   weather = weather.join("");
-  element.city.textContent = data.name;
-  element.description.textContent = "Сейчас " + weather.toLowerCase();
-  element.temperature.textContent = Math.round(data.main.temp) + "°C";
-  element.change.textContent = "Выбрать другой город";
+  city.textContent = data.name;
+  description.textContent = "Сейчас " + weather.toLowerCase();
+  temperature.textContent = Math.round(data.main.temp) + "°C";
+  change.textContent = "Выбрать другой город";
 }
 // Функция, отображающая страницу с загрузкой
 async function loadFirstPage() {
   try {
-    element.loader.style.display = "block";
+    loader.style.display = "block";
     const data = await findGeolocation();
-    element.loader.style.display = "none";
+    loader.style.display = "none";
     renderWeather(data);
   } catch (error) {
     showSelection();
@@ -70,19 +88,19 @@ async function loadFirstPage() {
 }
 loadFirstPage();
 // События
-element.change.addEventListener("click", showSelection); // Событие кнопки по смене города
+change.addEventListener("click", showSelection); // Событие кнопки по смене города
 // Событие отправления формы по нажатию на Enter
-element.form.addEventListener("submit", (event) => {
+form.addEventListener("submit", (event) => {
   event.preventDefault();
   findWeather();
 });
 // Событие кнопки для поиска введеного города
-element.find.addEventListener("click", findWeather);
+find.addEventListener("click", findWeather);
 // Событие кнопки для возврашения к разделу ввода интересующего город
-element.again.addEventListener("click", showSelection);
+again.addEventListener("click", showSelection);
 // Функция по поиску введеного города
 async function findWeather() {
-  const city = element.input.value.trim();
+  const city = input.value.trim();
   try {
     const weatherByCity = await checkWeather(city);
     renderWeather(weatherByCity);
@@ -92,20 +110,20 @@ async function findWeather() {
 }
 // Функция, отображающая раздел ошибки
 function showError() {
-  element.error.style.display = "flex";
-  element.geolocation.style.display = "none";
-  element.selection.style.display = "none";
+  error.style.display = "flex";
+  geolocation.style.display = "none";
+  selection.style.display = "none";
 }
 // Функция, отображающая раздел ввода города
 function showSelection() {
-  element.geolocation.style.display = "none";
-  element.selection.style.display = "flex";
-  element.error.style.display = "none";
-  element.input.value = "";
+  geolocation.style.display = "none";
+  selection.style.display = "flex";
+  error.style.display = "none";
+  input.value = "";
 }
 // Функция, отображающая раздел геолокации
 function showGeolocation() {
-  element.geolocation.style.display = "block";
-  element.selection.style.display = "none";
-  element.error.style.display = "none";
+  geolocation.style.display = "block";
+  selection.style.display = "none";
+  error.style.display = "none";
 }
