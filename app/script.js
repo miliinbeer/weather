@@ -1,69 +1,63 @@
-import { OPENWEATHER, OPENWEATHER_URL_ONE, GEOIPIFY_URL } from "./keys.js";
-// Раздел, отображающий:
-export const geolocation = document.querySelector(".geolocation"); // Геолокацию, определяющий автоматически
-export const temperature = document.querySelector(".geolocation__temperature"); // Температуру
-export const city = document.querySelector(".geolocation__city"); // Название города
-export const description = document.querySelector(".geolocation__description");
-export const img = document.querySelector(".geolocation__img"); // Иконку погоды
-export const change = document.querySelector("#change"); // Кнопка для смены города
-// Раздел, отображающий:
-export const selection = document.querySelector(".selection");
-export const input = document.querySelector("#input"); // Ввод интересующего города
-export const find = document.querySelector("#find"); // Кнопка для поиска введенного города
-export const form = document.querySelector("#form"); // Форма ввода интересующего города
-// Раздел, отображающий:
-export const error = document.querySelector(".error"); // Сообщение об ошибке
-export const again = document.querySelector("#again"); // Кнопка для возврашения к разделу ввода интересующего города
-export const loader = document.querySelector(".lds-ring"); // Колесо загрузки
+const OPENWEATHER = "08921998095a538cc8c7bd56e350dfef";
+const OPENWEATHER_URL_ONE = `https://api.openweathermap.org/data/2.5/weather?&appid=${OPENWEATHER}&units=metric&lang=ru&q=`;
+const GEOIPIFY_URL = `https://geo.ipify.org/api/v2/country,city?apiKey=at_shYjk5pzobvCPVthoXt0OuhfE5gFd`;
+
+const geolocation = document.querySelector(".geolocation"); // Раздел, отображающий погоду
+const temperature = document.querySelector(".geolocation__temperature"); // Температура
+const city = document.querySelector(".geolocation__city"); // Название города
+const description = document.querySelector(".geolocation__description"); // Описание погоды
+const change = document.querySelector("#change"); // Кнопка для смены города
+const selection = document.querySelector(".selection"); // Раздел с поиском интересующего города
+const input = document.querySelector("#input"); // Ввод интересующего города
+const find = document.querySelector("#find"); // Кнопка для поиска введенного города
+const form = document.querySelector("#form"); // Форма ввода интересующего города
+const error = document.querySelector(".error"); // Раздел с ообщением об ошибке
+const again = document.querySelector("#again"); // Кнопка для возврашения к разделу ввода интересующего города
+const loader = document.querySelector(".lds-ring"); // Колесо загрузки
 
 // Запрос на определение местоположения
 function locationRequest() {
-  return new Promise(function (resolve, reject) {
-    const geolocation = navigator.geolocation.getCurrentPosition(
-      resolve,
-      reject
-    );
-    if (geolocation) {
-      return;
-    }
+  return new Promise((resolve, reject)=>{
+    navigator.geolocation.getCurrentPosition(resolve, reject);
   });
 }
+
 // Функция для получения данных геолокации при доступе к данным о местоположении, либо по IP адресу при блокировке доступа
 async function findGeolocation() {
   try {
-    const position = await locationRequest();
-    const latitude = position.coords.latitude;
-    const longitude = position.coords.longitude;
-    const API_URL_OPENWEATHER = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${OPENWEATHER}&units=metric&lang=ru`;
-    const response = await fetch(API_URL_OPENWEATHER);
-    const data = await response.json();
-    return data;
+    const userGeolocation = await locationRequest();
+    return await fetch(
+      `https://api.openweathermap.org/data/2.5/weather?lat=${userGeolocation.coords.latitude}&lon=${userGeolocation.coords.longitude}&appid=${OPENWEATHER}&units=metric&lang=ru`
+    ).then((response) => response.json());
   } catch (error) {
+    console.error(error.message);
     return await checkCityWithIP();
   }
 }
+
 // Функция, отображающая температуру введеного города
-async function checkWeather(city) {
-  const response = await fetch(OPENWEATHER_URL_ONE + city);
-  const data = await response.json();
-  return data;
+async function searchWeather(city) {
+  return await fetch(OPENWEATHER_URL_ONE + city).then((response) =>
+    response.json()
+  );
 }
+
 // Функция, отображающая погоду по IP адресу и при блокировке доступа к данным о местоположении
 async function checkCityWithIP() {
   try {
-    showElements();
-    const response = await fetch(GEOIPIFY_URL);
-    const data = await response.json();
-    const latitude = data.location.lat;
-    const longitude = data.location.lng;
-    const API_URL_OPENWEATHER = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${OPENWEATHER}&units=metric&lang=ru`;
-    const responseTemperature = await fetch(API_URL_OPENWEATHER);
-    const dataTemperature = await responseTemperature.json();
-    return dataTemperature;
+    const searcher = await fetch(GEOIPIFY_URL).then((response) =>
+      response.json()
+    );
+    return await fetch(
+      `https://api.openweathermap.org/data/2.5/weather?lat=${searcher.location.lat}&lon=${searcher.location.lng}&appid=${OPENWEATHER}&units=metric&lang=ru`
+    ).then((response) => response.json());
   } catch (error) {
-    console.error("Ooops. Something went wrong.", error);
+    console.error(
+      "API для определения геолокации пользователя по IP не работает.", error
+    );
   }
 }
+
 // Функция для отрисовки данных погоды
 function renderWeather(data) {
   showGeolocation();
@@ -75,6 +69,7 @@ function renderWeather(data) {
   temperature.textContent = Math.round(data.main.temp) + "°C";
   change.textContent = "Выбрать другой город";
 }
+
 // Функция, отображающая страницу с загрузкой
 async function loadFirstPage() {
   try {
@@ -82,38 +77,41 @@ async function loadFirstPage() {
     const data = await findGeolocation();
     loader.style.display = "none";
     renderWeather(data);
-  } catch (error) {
+  } catch {
     showSelection();
   }
 }
 loadFirstPage();
-// События
+
 change.addEventListener("click", showSelection); // Событие кнопки по смене города
-// Событие отправления формы по нажатию на Enter
+
 form.addEventListener("submit", (event) => {
   event.preventDefault();
   findWeather();
-});
-// Событие кнопки для поиска введеного города
-find.addEventListener("click", findWeather);
-// Событие кнопки для возврашения к разделу ввода интересующего город
-again.addEventListener("click", showSelection);
+}); // Событие отправления формы по нажатию на Enter
+
+find.addEventListener("click", findWeather); // Событие кнопки для поиска введеного города
+
+again.addEventListener("click", showSelection); // Событие кнопки для возврашения к разделу ввода интересующего город
+
 // Функция по поиску введеного города
 async function findWeather() {
   const city = input.value.trim();
   try {
-    const weatherByCity = await checkWeather(city);
+    const weatherByCity = await searchWeather(city);
     renderWeather(weatherByCity);
   } catch (error) {
     showError();
   }
 }
+
 // Функция, отображающая раздел ошибки
 function showError() {
   error.style.display = "flex";
   geolocation.style.display = "none";
   selection.style.display = "none";
 }
+
 // Функция, отображающая раздел ввода города
 function showSelection() {
   geolocation.style.display = "none";
@@ -121,6 +119,7 @@ function showSelection() {
   error.style.display = "none";
   input.value = "";
 }
+
 // Функция, отображающая раздел геолокации
 function showGeolocation() {
   geolocation.style.display = "block";
